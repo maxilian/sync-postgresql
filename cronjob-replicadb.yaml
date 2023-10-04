@@ -1,0 +1,49 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: replikasi-database
+  namespace: postgres
+  labels:
+    app: replicadb
+    from: postgres-gcp
+    destination: postgres-azure
+spec:
+  schedule: 0 0 * * 0
+  concurrencyPolicy: Allow
+  suspend: false
+  jobTemplate:
+    metadata:
+      labels:
+        app: replicadb
+        from: postgres-gcp
+        destination: postgres-azure
+    spec:
+      template:
+        spec:
+          volumes:
+            - name: replicadb-conf
+              configMap:
+                name: configmap-replicadb
+                items:
+                  - key: replicadb.conf
+                    path: replicadb.conf
+          
+          containers:
+            - name: replicadb-app
+              image: osalvador/replicadb:0.15.1
+              volumeMounts:
+                - name: replicadb-conf
+                  mountPath: /home/replicadb/conf/replicadb.conf
+                  subPath: replicadb.conf
+              imagePullPolicy: IfNotPresent
+              resources:
+                limits:
+                  cpu: 100m
+                  memory: 80Mi
+                requests:
+                  cpu: 300m
+                  memory: 300Mi
+          restartPolicy: OnFailure
+          terminationGracePeriodSeconds: 30
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
