@@ -8,7 +8,7 @@ metadata:
     from: postgres-gcp
     destination: postgres-azure
 spec:
-  schedule: 0 0 * * 0
+  schedule: */10 * * * * *
   concurrencyPolicy: Allow
   suspend: false
   jobTemplate:
