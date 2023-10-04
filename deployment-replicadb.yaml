@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: replikasi-database
+  namespace: postgres
+  labels:
+    app: replicadb
+    from: postgres-gcp
+    destination: postgres-azure
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: replicadb
+      from: postgres-gcp
+      destination: postgres-azure
+  template:
+    metadata:
+      labels:
+        app: replicadb
+        from: postgres-gcp
+        destination: postgres-azure
+    spec:
+      volumes:
+        - name: replicadb-conf
+          configMap:
+            name: configmap-replicadb
+            items:
+              - key: replicadb.conf
+                path: replicadb.conf
+      containers:
+        - name: replicadb-app
+          image: osalvador/replicadb:0.15.1
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/bash
+            - -c
+            - while true; do /home/replicadb/bin/replicadb --options-file /home/replicadb/conf/replicadb.conf; sleep 10; done
+          resources:
+            limits:
+              cpu: 300m
+              memory: 350Mi
+            requests:
+              cpu: 100m
+              memory: 280Mi
+          env:
+            - name: SOURCE_USER
+              valueFrom:
+                secretKeyRef:
+                  key: SOURCE_USER
+                  name: secret-replicadb
+            
+            - name: SOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: SOURCE_PASSWORD
+                  name: secret-replicadb
+            
+            - name: SINK_USER
+              valueFrom:
+                secretKeyRef:
+                  key: SINK_USER
+                  name: secret-replicadb
+            
+            - name: SINK_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: SINK_PASSWORD
+                  name: secret-replicadb
+          volumeMounts:
+            - name: replicadb-conf
+              mountPath: /home/replicadb/conf/replicadb.conf
+              subPath: replicadb.conf
+         
+      
