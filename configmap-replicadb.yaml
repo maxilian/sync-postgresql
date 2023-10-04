@@ -11,10 +11,12 @@ data:
     verbose=true
     ############################# Source Options ##############################
     source.connect=jdbc:postgresql://172.18.0.4:5432/db-sumber
-    source.user=postgres
+    source.user=${SOURCE_USER}
+    source.password=${SOURCE_PASSWORD}
     source.table=public.tablenya
     ############################# Sink Options ################################
     sink.connect=jdbc:postgresql://172.18.0.5:5432/db-tujuan
-    sink.user=postgres
+    sink.user=${SINK_USER}
+    sink.password=${SINK_PASSWORD}
     sink.table=public.tablenya
     sink.disable.truncate=true
