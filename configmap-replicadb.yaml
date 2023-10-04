@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: configmap-replicadb
+  namespace: postgre
+data: 
+  replicadb.conf: |
+    mode=incremental
+    jobs=2
+    fetch.size=10000
+    verbose=true
+    ############################# Source Options ##############################
+    source.connect=jdbc:postgresql://172.18.0.4:5432/db-sumber
+    source.user=postgres
+    source.table=public.tablenya
+    ############################# Sink Options ################################
+    sink.connect=jdbc:postgresql://172.18.0.5:5432/db-tujuan
+    sink.user=postgres
+    sink.table=public.tablenya
+    sink.disable.truncate=true
